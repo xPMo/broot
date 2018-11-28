@@ -3,6 +3,12 @@ use std::io;
 use termion::event::Key;
 
 #[derive(Debug)]
+pub struct Command {
+    pub raw: String,
+    pub action: Action,
+}
+
+#[derive(Debug)]
 pub enum Action {
     MoveSelection(i16),        // up (neg) or down (positive) in the list
     Select(String),            // select by key
@@ -11,6 +17,7 @@ pub enum Action {
     NudeVerbEdit(String),      // verb without selection, unfinished
     VerbSelection(String),     // verb without selection
     VerbSelectionEdit(String), // verb without selection, unfinished
+    Search(String),            //
     Back,                      // back to last app state
     Quit,
     Unparsed, // or unparsable
@@ -23,6 +30,7 @@ impl Action {
                 r"(?x)
                 ^
                 (?P<key>[0-1a-zA-Z]*)
+                (?:\s*/(?P<search>[\w.]+))?
                 (?:\s+(?P<verb>\w+))?
                 $
             "
@@ -30,29 +38,26 @@ impl Action {
         }
         match RE.captures(raw) {
             Some(c) => {
-                match (c.name("key"), c.name("verb"), finished) {
-                    (Some(_key), Some(verb), false) => {
-                        Action::VerbSelectionEdit(String::from(verb.as_str()))
-                    }
-                    (Some(_key), Some(verb), true) => {
-                        Action::VerbSelection(String::from(verb.as_str()))
-                    }
-                    (Some(key), None, false) => Action::Select(String::from(key.as_str())),
-                    (Some(_key), None, true) => Action::OpenSelection,
-                    (None, Some(verb), false) => Action::NudeVerbEdit(String::from(verb.as_str())),
-                    (None, Some(verb), true) => Action::NudeVerb(String::from(verb.as_str())),
-                    _ => Action::Unparsed, // exemple: finishes with a space
+                match c.name("search") {
+                    Some(pattern) => Action::Search(String::from(pattern.as_str())),
+                    None => match (c.name("key"), c.name("verb"), finished) {
+                        (Some(_key), Some(verb), false) => {
+                            Action::VerbSelectionEdit(String::from(verb.as_str()))
+                        }
+                        (Some(_key), Some(verb), true) => {
+                            Action::VerbSelection(String::from(verb.as_str()))
+                        }
+                        (Some(key), None, false) => Action::Select(String::from(key.as_str())),
+                        (Some(_key), None, true) => Action::OpenSelection,
+                        (None, Some(verb), false) => Action::NudeVerbEdit(String::from(verb.as_str())),
+                        (None, Some(verb), true) => Action::NudeVerb(String::from(verb.as_str())),
+                        _ => Action::Unparsed, // exemple: finishes with a space
+                    },
                 }
             }
             None => Action::Unparsed,
         }
     }
-}
-
-#[derive(Debug)]
-pub struct Command {
-    pub raw: String,
-    pub action: Action,
 }
 
 impl Command {

@@ -80,8 +80,13 @@ impl AppState {
                     Some(verb) => verb.execute(&self)?,
                     None => AppStateCmdResult::verb_not_found(&verb_key),
                 }
-            }
+            },
             Action::Quit => AppStateCmdResult::Quit,
+            Action::Search(pattern) => {
+                let mut options = self.options.clone();
+                options.set_filename_pattern(&pattern);
+                AppStateCmdResult::NewOptions(options)
+            },
             _ => AppStateCmdResult::Keep,
         })
     }
@@ -108,6 +113,8 @@ impl App {
     }
 
     pub fn push(&mut self, path: PathBuf, options: TreeOptions) -> io::Result<()> {
+        let mut options = options.clone();
+        options.prepare_for_root(&path);
         let tree = TreeBuilder::from(path, options.clone())?.build(self.h - 2)?;
         self.states.push(AppState { tree, options });
         Ok(())
@@ -163,7 +170,12 @@ impl App {
                 AppStateCmdResult::NewOptions(options) => {
                     let path = self.state().tree.root().clone();
                     self.push(path, options)?;
-                    cmd = Command::new();
+                    match cmd.action { // FIXME DIRTY !
+                        Action::Search(_) => {},
+                        _ => {
+                            cmd = Command::new();
+                        },
+                    }
                     screen.write_status(&self.state())?;
                 }
                 AppStateCmdResult::PopState => {
