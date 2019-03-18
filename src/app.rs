@@ -282,6 +282,6 @@ impl App {
 
 impl Drop for App {
     fn drop(&mut self) {
-        io::stdout().flush().unwrap();
+        io::stderr().flush().unwrap();
     }
 }

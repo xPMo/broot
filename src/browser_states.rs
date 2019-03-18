@@ -345,7 +345,7 @@ impl AppState for BrowserState {
         };
         let total_char_size = 9;
         write!(
-            screen.stdout,
+            screen.stderr,
             "{}{}{}{} h:{}{}{}{}{}  gi:{}{}{}",
             termion::cursor::Goto(screen.w - total_char_size, screen.h),
             screen.skin.flag_label.fg,

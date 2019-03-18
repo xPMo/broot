@@ -21,7 +21,7 @@ impl Screen {
         let mut text = String::from(text);
         text.truncate(self.w as usize - 2);
         write!(
-            self.stdout,
+            self.stderr,
             "{}{}{}{} {}{}",
             termion::cursor::Goto(2, self.h - 1),
             skin.fg,
@@ -30,7 +30,7 @@ impl Screen {
             text,
             self.skin.reset.bg,
         )?;
-        self.stdout.flush()?;
+        self.stderr.flush()?;
         Ok(())
     }
 }

@@ -14,7 +14,7 @@ use crate::errors::ProgramError;
 /// A launchable can only be executed on end of life of broot.
 #[derive(Debug)]
 pub enum Launchable {
-    Printer { // just print something on stdout on end of broot
+    Printer { // just print something on stderr on end of broot
         to_print: String,
     },
     Program { // execute an external program
@@ -109,7 +109,7 @@ pub fn print_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult
             writeln!(&f, "{}", path)?;
             AppStateCmdResult::Quit
         } else {
-            // no output path provided. We write on stdout, but we must
+            // no output path provided. We write on stderr, but we must
             // do it after app closing to have the normal terminal
             let launchable = Launchable::printer(path);
             AppStateCmdResult::Launch(launchable)

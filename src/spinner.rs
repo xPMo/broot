@@ -13,14 +13,14 @@ impl Spinner for Screen {
     fn write_spinner(&mut self, spinning: bool) -> io::Result<()> {
         let y = self.h - 1;
         write!(
-            self.stdout,
+            self.stderr,
             "{}{}{}{}",
             termion::cursor::Goto(1, y),
             self.skin.spinner.fg,
             self.skin.spinner.bg,
             if spinning { "⌛" } else { " " },
         )?;
-        self.stdout.flush()?;
+        self.stderr.flush()?;
         Ok(())
     }
 }

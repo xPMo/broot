@@ -1,5 +1,5 @@
 use crate::skin::Skin;
-use std::io::{self, stdout, Write};
+use std::io::{self, stderr, Write};
 use termion::color;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::screen::AlternateScreen;
@@ -7,7 +7,7 @@ use termion::screen::AlternateScreen;
 pub struct Screen {
     pub w: u16,
     pub h: u16,
-    pub stdout: AlternateScreen<RawTerminal<io::Stdout>>,
+    pub stderr: AlternateScreen<RawTerminal<io::Stderr>>,
     pub skin: Skin,
 }
 
@@ -22,15 +22,15 @@ pub struct ScreenArea {
 
 impl Screen {
     pub fn new(skin: Skin) -> io::Result<Screen> {
-        let stdout = AlternateScreen::from(stdout().into_raw_mode()?);
+        let stderr = AlternateScreen::from(stderr().into_raw_mode()?);
         let mut screen = Screen {
             w: 0,
             h: 0,
-            stdout,
+            stderr,
             skin,
         };
         screen.read_size()?;
-        write!(screen.stdout, "{}", termion::cursor::Hide)?;
+        write!(screen.stderr, "{}", termion::cursor::Hide)?;
         Ok(screen)
     }
     pub fn read_size(&mut self) -> io::Result<()> {
@@ -41,7 +41,7 @@ impl Screen {
     }
     pub fn reset_colors(&mut self) -> io::Result<()> {
         write!(
-            self.stdout,
+            self.stderr,
             "{}{}",
             color::Fg(color::Reset),
             color::Bg(color::Reset),
@@ -51,10 +51,10 @@ impl Screen {
 
 impl Drop for Screen {
     fn drop(&mut self) {
-        write!(self.stdout, "{}", termion::cursor::Show).unwrap();
+        write!(self.stderr, "{}", termion::cursor::Show).unwrap();
         // if we don't flush now, the standard screen may receive some
         // unflushed data which was meant for the alternate screen.
-        self.stdout.flush().unwrap();
+        self.stderr.flush().unwrap();
     }
 }
 

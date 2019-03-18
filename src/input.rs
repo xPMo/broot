@@ -12,7 +12,7 @@ pub trait Input {
 impl Input for Screen {
     fn write_input(&mut self, cmd: &Command) -> io::Result<()> {
         write!(
-            self.stdout,
+            self.stderr,
             "{}{}{}{}{}{} {}",
             termion::cursor::Goto(1, self.h),
             self.skin.input.fg,
@@ -22,7 +22,7 @@ impl Input for Screen {
             termion::style::Invert,
             termion::style::NoInvert,
         )?;
-        self.stdout.flush()?;
+        self.stderr.flush()?;
         Ok(())
     }
 }

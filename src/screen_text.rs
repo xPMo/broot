@@ -67,22 +67,22 @@ impl Text {
         let mut i = area.scroll as usize;
         for y in area.top..=area.bottom {
             write!(
-                screen.stdout,
+                screen.stderr,
                 "{}{}",
                 termion::cursor::Goto(1, y),
                 termion::clear::CurrentLine,
             )?;
             if i < self.lines.len() {
-                write!(screen.stdout, "{}", &self.lines[i],)?;
+                write!(screen.stderr, "{}", &self.lines[i],)?;
                 i += 1;
             }
             if let Some((sctop, scbottom)) = scrollbar {
                 if sctop <= y && y <= scbottom {
-                    write!(screen.stdout, "{}▐", termion::cursor::Goto(screen.w, y),)?;
+                    write!(screen.stderr, "{}▐", termion::cursor::Goto(screen.w, y),)?;
                 }
             }
         }
-        screen.stdout.flush()?;
+        screen.stderr.flush()?;
         Ok(())
     }
 }
